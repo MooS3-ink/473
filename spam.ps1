@@ -1,11 +1,28 @@
-$logDir = "C:\ProGramData\tennp"
-if (!(Test-Path $logDir)) {
-    New-Item -ItemType Directory -Path $logDir | Out-Null
+$TargetDir = "C:\ProGramData\tennp"
+$SizeBytes = 100 * 1024 * 1024   # 100 MB
+
+# Ensure directory exists
+if (-not (Test-Path $TargetDir)) {
+    New-Item -ItemType Directory -Path $TargetDir | Out-Null
 }
 
-for ($i = 0; $i -lt 5; $i++) {
-    $filename = "log_$((Get-Random).ToString('X')).txt"
-    $content = "[INFO] Process checked at $(Get-Date)"
-    $fullPath = Join-Path $logDir $filename
-    $content | Out-File $fullPath -Encoding ASCII
+# Unique filename
+$fname = "temp_" + (Get-Date -Format "yyyyMMdd_HHmmss") + "_" + ((Get-Random).ToString("X")) + ".bin"
+$fullPath = Join-Path $TargetDir $fname
+
+# Try fast native tool fsutil first (creates file with given length)
+try {
+    & fsutil file createnew $fullPath $SizeBytes
+    exit 0
+} catch {
+    # fallback: create empty file and set length via .NET
+    try {
+        $fs = [System.IO.File]::Open($fullPath, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+        $fs.SetLength([int64]$SizeBytes)
+        $fs.Close()
+        exit 0
+    } catch {
+        # if both methods fail, exit nonzero
+        exit 1
+    }
 }
