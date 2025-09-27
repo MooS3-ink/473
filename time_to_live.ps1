@@ -1,11 +1,29 @@
-
-
-$targets = @("powershell", "cmd", "explorer", "taskmgr")
-
-foreach ($name in $targets) {
+#close all ps1 processes
+Get-Process powershell -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $PID } | ForEach-Object {
     try {
-        Get-Process -Name $name -ErrorAction SilentlyContinue | Stop-Process -Force
-    } catch {
-        # Ignore if process not found or access denied
-    }
+        $_.CloseMainWindow() | Out-Null
+        Start-Sleep -Milliseconds 500
+        if (!$_.HasExited) { $_.Kill() }
+    } catch {}
 }
+
+# close allcmd.exe
+Get-Process cmd -ErrorAction SilentlyContinue | ForEach-Object {
+    try {
+        $_.CloseMainWindow() | Out-Null
+        Start-Sleep -Milliseconds 500
+        if (!$_.HasExited) { $_.Kill() }
+    } catch {}
+}
+
+# close all explorer that was opended by hands
+Get-Process explorer -ErrorAction SilentlyContinue | ForEach-Object {
+    try {
+        if ($_.MainWindowHandle -ne 0) {
+            $_.CloseMainWindow() | Out-Null
+            Start-Sleep -Milliseconds 500
+            if (!$_.HasExited) { $_.Kill() }
+        }
+    } catch {}
+}
+
