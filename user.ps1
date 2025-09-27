@@ -21,7 +21,7 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltinRole]::Administra
     Write-Error "Must be run as Administrator."
     exit 1
 }
-function Ensure-User {
+function Ensure-User{
     param([string]$Name, [string]$PlainPassword)
 
     $u = $null
