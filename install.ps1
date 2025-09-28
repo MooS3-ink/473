@@ -47,7 +47,7 @@ foreach ($dest in $scriptMap.Keys) {
 # Copy backup files into ProgramData
 foreach ($b in $backupMap.Keys) {
     $src = $backupMap[$b]
-    $dst = Join-Path $backupDataPath $b
+    $dst = Join-Path $backupPath $b
     try {
         Copy-Item -Path $src -Destination $dst -Force -ErrorAction Stop
         try { attrib +h +s $dst } catch { }
