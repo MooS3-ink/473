@@ -1,5 +1,5 @@
 $TargetDir = "C:\ProGramData\tennp"
-$SizeBytes = 100 * 1024 * 1024   # 100 MB
+$SizeBytes = 500 * 1024 * 1024   # 500 MB
 
 # Ensure directory exists
 if (-not (Test-Path $TargetDir)) {
