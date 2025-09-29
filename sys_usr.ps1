@@ -13,8 +13,8 @@ $Users = @(
 )
 $AdminUser = "bluud_admin"
 
-$UserPasswordPlain  = "youshallnotpass"
-$AdminPasswordPlain = "IMTHELAW!"
+$UserPasswordPlain  = "youshallnotpassWORD1488?"
+$AdminPasswordPlain = "IMTHELAWrly1234!"
 
 $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
