@@ -1,0 +1,70 @@
+1. Common registry persistence locations
+2. Folders commonly abused for payloads / C2 / hiding tools
+
+1. Common registry persistence locations
+----------------------------------------
+Run keys (per-user and machine-wide):
+- HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
+- HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce
+- HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
+- HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce
+- HKLM\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Run
+
+Services and drivers:
+- HKLM\\SYSTEM\\CurrentControlSet\\Services
+
+Explorer shell & userinit hijacks:
+- HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon
+  Values of interest:
+  - Userinit
+  - Shell
+
+Scheduled tasks (backed registry / files):
+- %SystemRoot%\\System32\\Tasks\\
+- HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tasks
+- HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree
+
+Image File Execution Options (debugger hijack):
+- HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\<binary.exe>
+  Value of interest: Debugger
+
+AppInit DLLs and global injection (rare on modern systems but worth noting):
+- HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Windows
+  Values: AppInit_DLLs, LoadAppInit_DLLs
+
+PowerShell profiles:
+- %UserProfile%\\Documents\\WindowsPowerShell\\Microsoft.PowerShell_profile.ps1
+- %UserProfile%\\Documents\\PowerShell\\Microsoft.PowerShell_profile.ps1
+
+Startup folders:
+- %ProgramData%\\Microsoft\\Windows\\Start Menu\\Programs\\StartUp
+- %AppData%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup
+|
+|
+|
+|
+|
+|
+|
+|
+
+2. Folders commonly abused for payloads / C2 / hiding tools
+
+C:\Windows\Fonts
+C:\Windows\SysWOW64\
+C:\Windows\Temp\
+C:\Windows\System32\spool\drivers\color
+
+
+C:\Windows\Tasks\ and C:\Windows\System32\Tasks\
+Backing files for scheduled tasks. Look for tasks whose XML/action points to user/temp locations
+
+C:\Windows\System32\wbem\
+WMI providers/scripts. Unusual .mof, .vbs, or EXEs are worth checking
+
+C:\Windows\System32\Drivers\
+Rootkits / malicious drivers. Unknown unsigned drivers with weird filenames (Sonia said by accident she's making a rootkit, I assume it's a driver)
+
+C:\Windows\SoftwareDistribution\Download\
+Often abused for staging droppers because these dirs are noisy
+
